@@ -1,10 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace TSK.NeuralNetwork
 {
     class Tools
     {
+        public static List<KeyValuePair<double, List<double>>> downloadSet(string path)
+        {
+            List<KeyValuePair<double, List<double>>> result = new List<KeyValuePair<double, List<double>>>();
+            using (TextReader reader = File.OpenText(path))
+            {
+                string text;
+                while ((text = reader.ReadLine()) != null)
+                {
+                    string[] arr = text.Split(new char[] { ',' });
+                    List<double> x = new List<double>();
+                    arr.Where((e, i) => i != arr.Length - 1).ToList().ForEach(e => x.Add(double.Parse(e.Replace('.', ','))));
+                    result.Add(new KeyValuePair<double, List<double>>(int.Parse(arr[arr.Length - 1]), x));
+                }
+            }
+
+            return result;
+        }
+
         public static double DeltaKroneker(int i, int j)
         {
             return (i == j) ? 1.0 : 0.0;

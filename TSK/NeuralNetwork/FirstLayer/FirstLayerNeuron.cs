@@ -11,17 +11,20 @@ namespace TSK.NeuralNetwork.FirstLayer
         public List<double> Sigma { get; set; }
         public List<double> B { get; set; }
 
+        private int N;
+
         public FirstLayerNeuron(int N)
         {
-            C = new List<double>();
+            this.N = N;
+            
             B = new List<double>();
             Sigma = new List<double>();
 
             for (int i = 0; i < N; i++)
             {
-                C.Add(random.NextDouble());
+                //C.Add(random.NextDouble());
                 B.Add(1);
-                Sigma.Add(random.NextDouble());
+                //Sigma.Add(random.NextDouble());
             }
         }
 
@@ -35,6 +38,16 @@ namespace TSK.NeuralNetwork.FirstLayer
             }
 
             return result;
+        }
+
+        internal void InitCenters(List<double> list)
+        {
+            C = new List<double>();
+
+            for (int i = 0; i < N; i++)
+            {
+                C.Add(list[i]);
+            }
         }
 
         /*public double RecalculatedB(double coefficient, double error, List<double> p, List<double> x, int i, int j, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList)

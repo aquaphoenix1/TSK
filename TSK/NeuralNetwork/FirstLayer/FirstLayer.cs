@@ -166,6 +166,14 @@ namespace TSK.NeuralNetwork.FirstLayer
             return result;
         }
 
+        internal void InitCenters(List<List<double>> initCenters)
+        {
+            for(int i = 0; i < M; i++)
+            {
+                Neurons[i].InitCenters(initCenters[i]);
+            }
+        }
+
         public List<List<double>> GetRecalculatedD(double coefficient, double y, double d, List<List<double>> p, List<double> x)
         {
             List<List<List<double>>> allParams = GetAllLists();

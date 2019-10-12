@@ -124,11 +124,13 @@ namespace TSK.NeuralNetwork
 
                 thirdLayer.SetNewP(newP);
 
+                List<double> AAAAAAAAAAAAAAA = new List<double>();
+
                 for (int k = 0; k < learningSet.Count; k++)
                 {
                     KeyValuePair<double, List<double>> pair = learningSet[k];
                     List<double> learningSetExample = pair.Value;
-                    double output = Output(learningSetExample, out _);
+                    double output = Output(learningSetExample, out AAAAAAAAAAAAAAA);
                     double val = pair.Key;
 
                     List<List<double>> newC = firstLayer.GetRecalculatedC(0.2, output, val, newP, learningSetExample);
@@ -146,8 +148,13 @@ namespace TSK.NeuralNetwork
                     }
                 }
 
-                double o = Output(new List<double>(new double[] { 0.25, 0.21 }), out _);
+                double o = Output(new List<double>(new double[] { 0.25, 0.21 }), out AAAAAAAAAAAAAAA);
             }
+        }
+
+        internal void InitCenters(List<List<double>> initCenters)
+        {
+            firstLayer.InitCenters(initCenters);
         }
     }
 }
