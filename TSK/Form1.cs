@@ -35,21 +35,28 @@ namespace TSK
 
                 if (fileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    dict = Tools.downloadSet(fileDialog.FileName);
+                    dict = Tools.DownloadSet(fileDialog.FileName);
                 }
             }
 
             if (dict != null)
             {
                 var res = dict.GroupBy(x => x.Key).Select(g => g.ToList()).ToList();
+
+                /*res[0] = new List<KeyValuePair<double, List<double>>>();
+                res[0].Add(new KeyValuePair<double, List<double>>(0, new List<double>(new double[] { 1, 1, 1, 1, 1, 2 })));
+                res[0].Add(new KeyValuePair<double, List<double>>(0, new List<double>(new double[] { 2, 2, 2, 2, 2, 4 })));
+                res[0].Add(new KeyValuePair<double, List<double>>(0, new List<double>(new double[] { 1, 1, 1, 1, 1, 2 })));
+                res[0].Add(new KeyValuePair<double, List<double>>(0, new List<double>(new double[] { 2, 2, 2, 2, 2, 4 })));
+                res[0].Add(new KeyValuePair<double, List<double>>(0, new List<double>(new double[] { 1, 1, 1, 1, 1, 2 })));
+                res[0].Add(new KeyValuePair<double, List<double>>(0, new List<double>(new double[] { 2, 2, 2, 2, 2, 4 })));
+                res[0].Add(new KeyValuePair<double, List<double>>(0, new List<double>(new double[] { 1, 1, 1, 1, 1, 2 })));
+                res[0].Add(new KeyValuePair<double, List<double>>(0, new List<double>(new double[] { 2, 2, 2, 2, 2, 4 })));*/
+                
                 var minCount = res.Min(x=>x.Count());
                 int learningPercents = (int)(minCount * 70 / 100);
                 int controlPercents = minCount * 15 / 100;
                 int checkPercents = minCount - learningPercents - controlPercents;
-
-                /*res[0] = new List<KeyValuePair<double, List<double>>>();
-                res[0].Add(new KeyValuePair<double, List<double>>(0, new List<double>(new double[] { 1, 1, 1, 1, 1, 2})));
-                res[0].Add(new KeyValuePair<double, List<double>>(0, new List<double>(new double[] { 1, 1, 1, 1, 1, 2 })));*/
 
                 List<KeyValuePair<double, List<double>>> learningSet1 = GetRandomArray(res[0], learningPercents);
                 List<KeyValuePair<double, List<double>>> controlSet1 = GetRandomArray(res[0], controlPercents);
@@ -70,6 +77,7 @@ namespace TSK
 
                 Network network = new Network(dict[0].Value.Count, 2);
                 network.InitCenters(initCenters);
+                network.InitRadiuses(initRadiuses);
 
                 network.Learning(totalLearningSet, 0.2);
             }
@@ -101,9 +109,13 @@ namespace TSK
             {
                 List<double> averageParams = new List<double>(Enumerable.Repeat(0.0, learningSets[j][0].Value.Count));
 
-                learningSets[j].Select(x => x.Value).ToList().ForEach(x => x.Select((y, i) => new { val = y, index = i }).ToList().ForEach(z => averageParams[z.index] += z.val));
+                learningSets[j].Select(x => x.Value).ToList().ForEach(x => x.Select((y, i) => new { val = y, index = i }).ToList().ForEach(z =>
+                {
+                    var newVal = Math.Abs(z.val - centers[j][z.index]);
+                    averageParams[z.index] = newVal > averageParams[z.index] ? newVal : averageParams[z.index];
+                }));
 
-                averageParams = averageParams.Select(x => x /= learningSets[j].Count).ToList();
+                averageParams = averageParams.Select(x => x /= 2).ToList();
 
                 initRadiuses.Add(averageParams);
             }

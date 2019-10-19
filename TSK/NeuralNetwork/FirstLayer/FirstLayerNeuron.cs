@@ -16,7 +16,9 @@ namespace TSK.NeuralNetwork.FirstLayer
         public FirstLayerNeuron(int N)
         {
             this.N = N;
-            
+
+            C = new List<double>();
+            Sigma = new List<double>();
             B = new List<double>();
             Sigma = new List<double>();
 
@@ -32,9 +34,9 @@ namespace TSK.NeuralNetwork.FirstLayer
         {
             double result = 1.0;
 
-            for (int j = 0; j < x.Count; j++)
+            //for (int j = 0; j < x.Count; j++)
             {
-                result *= Tools.GaussPow(x[j], C[j], Sigma[j], B[j]);
+                result *= Tools.nu(x, C, Sigma, B);
             }
 
             return result;
@@ -47,6 +49,16 @@ namespace TSK.NeuralNetwork.FirstLayer
             for (int i = 0; i < N; i++)
             {
                 C.Add(list[i]);
+            }
+        }
+
+        internal void InitRadiuses(List<double> list)
+        {
+            Sigma = new List<double>();
+
+            for (int i = 0; i < N; i++)
+            {
+                Sigma.Add(list[i]);
             }
         }
 

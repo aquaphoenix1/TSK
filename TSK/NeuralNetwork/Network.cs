@@ -135,7 +135,7 @@ namespace TSK.NeuralNetwork
 
                     List<List<double>> newC = firstLayer.GetRecalculatedC(0.2, output, val, newP, learningSetExample);
                     List<List<double>> newSigma = firstLayer.GetRecalculatedSigma(0.2, output, val, newP, learningSetExample);
-                    List<List<double>> newD = firstLayer.GetRecalculatedD(0.2, output, val, newP, learningSetExample);
+                    //List<List<double>> newB = firstLayer.GetRecalculatedD(0.2, output, val, newP, learningSetExample);
 
                     for (int i = 0; i < newC.Count; i++)
                     {
@@ -143,13 +143,18 @@ namespace TSK.NeuralNetwork
                         {
                             firstLayer.Neurons[i].C[j] -= newC[i][j];
                             firstLayer.Neurons[i].Sigma[j] -= newSigma[i][j];
-                            firstLayer.Neurons[i].B[j] -= newD[i][j];
+                            //firstLayer.Neurons[i].B[j] -= newB[i][j];
                         }
                     }
                 }
 
-                double o = Output(new List<double>(new double[] { 0.25, 0.21 }), out AAAAAAAAAAAAAAA);
+                double o = Output(new List<double>(new double[] { 85, 92, 45, 27, 31, 0.0 }), out AAAAAAAAAAAAAAA);
             }
+        }
+
+        internal void InitRadiuses(List<List<double>> initRadiuses)
+        {
+            firstLayer.InitRadiuses(initRadiuses);
         }
 
         internal void InitCenters(List<List<double>> initCenters)

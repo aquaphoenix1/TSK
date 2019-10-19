@@ -7,7 +7,7 @@ namespace TSK.NeuralNetwork
 {
     class Tools
     {
-        public static List<KeyValuePair<double, List<double>>> downloadSet(string path)
+        public static List<KeyValuePair<double, List<double>>> DownloadSet(string path)
         {
             List<KeyValuePair<double, List<double>>> result = new List<KeyValuePair<double, List<double>>>();
             using (TextReader reader = File.OpenText(path))
@@ -18,7 +18,7 @@ namespace TSK.NeuralNetwork
                     string[] arr = text.Split(new char[] { ',' });
                     List<double> x = new List<double>();
                     arr.Where((e, i) => i != arr.Length - 1).ToList().ForEach(e => x.Add(double.Parse(e.Replace('.', ','))));
-                    result.Add(new KeyValuePair<double, List<double>>(int.Parse(arr[arr.Length - 1]), x));
+                    result.Add(new KeyValuePair<double, List<double>>(double.Parse(arr[arr.Length - 1].Replace('.', ',')), x));
                 }
             }
 
@@ -32,12 +32,12 @@ namespace TSK.NeuralNetwork
 
         internal static double GaussPow(double x, double c, double sigma, double b)
         {
-            return Math.Pow(Gauss(x, c, sigma), 2 * b);
+            return Math.Pow(Gauss(x, c, sigma), 2.0 * b);
         }
 
         internal static double GaussPowMinusOne(double x, double c, double sigma, double b)
         {
-            return Math.Pow(Gauss(x, c, sigma), 2 * b - 1);
+            return Math.Pow(Gauss(x, c, sigma), 2.0 * b - 1.0);
         }
 
         private static double Gauss(double x, double c, double sigma)
@@ -57,13 +57,16 @@ namespace TSK.NeuralNetwork
             return result;
         }
 
-        public static double l(List<double> x, List<double> c, List<double> sigma, List<double> b)
+        public static double l(List<double> x, List<double> c, List<double> sigma, List<double> b, int i = -1)
         {
             double result = 1.0;
 
             for (int s = 0; s < x.Count; s++)
             {
-                result *= GaussPow(x[s], c[s], sigma[s], b[s]);
+                if (s != i)
+                {
+                    result *= GaussPow(x[s], c[s], sigma[s], b[s]);
+                }
             }
 
             return result;
@@ -99,10 +102,7 @@ namespace TSK.NeuralNetwork
 
             for (int s = 0; s < x.Count; s++)
             {
-                if (s != j)
-                {
-                    coeff *= l(x, cList[s], sigmaList[s], bList[s]);
-                }
+                coeff *= l(x, cList[i], sigmaList[i], bList[i], s);
             }
 
             return coeff;
