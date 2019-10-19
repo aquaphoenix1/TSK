@@ -7,22 +7,58 @@ namespace TSK.NeuralNetwork
 {
     class Tools
     {
-        public static List<KeyValuePair<double, List<double>>> DownloadSet(string path)
+        public static Random random = new Random();
+
+        public static int GetRandom(int maxValue)
         {
-            List<KeyValuePair<double, List<double>>> result = new List<KeyValuePair<double, List<double>>>();
+            return random.Next(0, maxValue);
+        }
+
+        public static Tuple<List<KeyValuePair<double, List<double>>>, List<double>> DownloadSet(string path)
+        {
+            var result = new List<KeyValuePair<double, List<double>>>();
             using (TextReader reader = File.OpenText(path))
             {
                 string text;
                 while ((text = reader.ReadLine()) != null)
                 {
-                    string[] arr = text.Split(new char[] { ',' });
-                    List<double> x = new List<double>();
+                    var arr = text.Split(new char[] { ',' });
+                    var x = new List<double>();
                     arr.Where((e, i) => i != arr.Length - 1).ToList().ForEach(e => x.Add(double.Parse(e.Replace('.', ','))));
                     result.Add(new KeyValuePair<double, List<double>>(double.Parse(arr[arr.Length - 1].Replace('.', ',')), x));
                 }
             }
 
-            return result;
+            var maxValues = NormalizeData(ref result);
+
+            return new Tuple<List<KeyValuePair<double, List<double>>>, List<double>>(result, maxValues);
+        }
+
+        public static List<double> NormalizeData(ref List<KeyValuePair<double, List<double>>> list)
+        {
+            var maxValues = new List<double>();
+            for (int i = 0; i < list[0].Value.Count; i++)
+            {
+                var max = list.Select(o => o.Value[i]).Max();
+                maxValues.Add(max);
+                list.ForEach(o => o.Value[i] /= max);
+            }
+
+            return maxValues;
+        }
+
+        public static List<KeyValuePair<double, List<double>>> GetRandomArray(List<KeyValuePair<double, List<double>>> list, int learningPercents)
+        {
+            List<KeyValuePair<double, List<double>>> res = new List<KeyValuePair<double, List<double>>>();
+
+            for (int i = 0; i < learningPercents; i++)
+            {
+                int randomVal = Tools.GetRandom(list.Count);
+                res.Add(list[randomVal]);
+                list.RemoveAt(randomVal);
+            }
+
+            return res;
         }
 
         public static double DeltaKroneker(int i, int j)

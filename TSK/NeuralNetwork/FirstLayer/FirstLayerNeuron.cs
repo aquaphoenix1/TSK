@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TSK.NeuralNetwork.FirstLayer
 {
@@ -17,29 +18,29 @@ namespace TSK.NeuralNetwork.FirstLayer
         {
             this.N = N;
 
-            C = new List<double>();
-            Sigma = new List<double>();
-            B = new List<double>();
-            Sigma = new List<double>();
+            // C = new List<double>();
+            // Sigma = new List<double>();
+            B = new List<double>(Enumerable.Repeat(1D, N));
 
-            for (int i = 0; i < N; i++)
+            /*for (int i = 0; i < N; i++)
             {
-                //C.Add(random.NextDouble());
+                C.Add(random.NextDouble());
                 B.Add(1);
-                //Sigma.Add(random.NextDouble());
-            }
+                Sigma.Add(random.NextDouble());
+            }*/
         }
 
         public double Calculate(List<double> x)
         {
-            double result = 1.0;
+            /*double result = 1.0;
 
-            //for (int j = 0; j < x.Count; j++)
+            for (int j = 0; j < x.Count; j++)
             {
                 result *= Tools.nu(x, C, Sigma, B);
             }
 
-            return result;
+            return result;*/
+            return Tools.nu(x, C, Sigma, B);
         }
 
         internal void InitCenters(List<double> list)
