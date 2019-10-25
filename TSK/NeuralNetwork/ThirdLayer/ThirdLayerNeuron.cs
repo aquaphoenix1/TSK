@@ -7,17 +7,24 @@ namespace TSK.NeuralNetwork.ThirdLayer
     {
         internal List<double> linearWeights;
         private int N;
-    
+
         private static Random random = new Random();
 
-        public ThirdLayerNeuron(int N)
+        public ThirdLayerNeuron(int N, List<double> weights = null)
         {
             this.N = N;
 
-            linearWeights = new List<double>();
-            for(int i = 0; i < N + 1; i++)
+            if (weights != null)
             {
-                linearWeights.Add(random.NextDouble());
+                linearWeights = weights;
+            }
+            else
+            {
+                linearWeights = new List<double>();
+                for (int i = 0; i < N + 1; i++)
+                {
+                    linearWeights.Add(random.NextDouble());
+                }
             }
         }
 
@@ -25,9 +32,9 @@ namespace TSK.NeuralNetwork.ThirdLayer
         {
             double result = linearWeights[0];
 
-            for(int i = 1; i < N; i++)
+            for (int i = 0; i < N; i++)
             {
-                result += linearWeights[i] * x[i - 1];
+                result += linearWeights[i + 1] * x[i];
             }
 
             return result;
@@ -35,7 +42,8 @@ namespace TSK.NeuralNetwork.ThirdLayer
 
         public double Calculate(double w, List<double> x)
         {
-            return w * Multiply(x);
+            var g = Multiply(x);
+            return w * g;
         }
 
         public void SetP(List<double> list)

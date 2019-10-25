@@ -20,7 +20,7 @@ namespace TSK.NeuralNetwork.FifthLayer
 
         public double Calculate(List<double> fourthLayerResult)
         {
-            return fourthLayerResult[1] / fourthLayerResult[0];
+            return fourthLayerResult[0] / fourthLayerResult[1];
         }
     }
 }

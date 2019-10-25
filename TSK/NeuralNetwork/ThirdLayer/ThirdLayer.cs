@@ -27,7 +27,7 @@ namespace TSK.NeuralNetwork.ThirdLayer
 
             for (int i = 0; i < M; i++)
             {
-                result.Add(Neurons[i].Calculate(secondLayerResult[i], x));
+                 result.Add(Neurons[i].Calculate(secondLayerResult[i], x));
             }
 
             return result;
@@ -37,7 +37,7 @@ namespace TSK.NeuralNetwork.ThirdLayer
         {
             for (int i = 0; i < M; i++)
             {
-                Neurons[i].SetP(newP[i++]);
+                Neurons[i].SetP(newP[i]);
             }
         }
     }

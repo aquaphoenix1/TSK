@@ -21,6 +21,7 @@ namespace TSK.NeuralNetwork.FourthLayer
 
         public List<double> Calculate(List<double> secondLayerResults, List<double> thirdLayerResults)
         {
+            
             List<double> result = new List<double>();
 
             for(int i = 0; i < neurons.Length; i++)

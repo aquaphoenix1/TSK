@@ -14,7 +14,7 @@ namespace TSK.NeuralNetwork
         private static int M;
         private static double learningCoefficient;
         private static List<KeyValuePair<double, List<double>>> learningSets;
-        private static List<double> maxValues;
+        private static List<KeyValuePair<double, List<double>>> checkSet;
 
         private static FirstLayer.FirstLayer firstLayer;
         private static SecondLayer.SecondLayer secondLayer;
@@ -26,14 +26,16 @@ namespace TSK.NeuralNetwork
         private static CancellationTokenSource learningTokenSource;
         private static CancellationToken cancellationLearningToken;
 
-        public static void InitNetwork(int N, int M, double learningCoefficient, List<KeyValuePair<double, List<double>>> learningSets, FormMain mainForm, List<double> maxValues)
+        public static int Epoch { get; set; } = 0;
+
+        public static void InitNetwork(int N, int M, double learningCoefficient, List<KeyValuePair<double, List<double>>> learningSets, FormMain mainForm, List<KeyValuePair<double, List<double>>> checkSet)
         {
             Network.N = N;
             Network.M = M;
             Network.learningCoefficient = learningCoefficient;
             Network.learningSets = learningSets;
+            Network.checkSet = checkSet;
             Network.mainForm = mainForm;
-            Network.maxValues = maxValues;
 
             firstLayer = new FirstLayer.FirstLayer(M, N);
             secondLayer = new SecondLayer.SecondLayer(M);
@@ -42,35 +44,21 @@ namespace TSK.NeuralNetwork
             fifthLayer = new FifthLayer.FifthLayer();
         }
 
-        public static double Output(List<double> list, out List<double> secondLayerResult)
+        public static double Output(List<double> list, out List<double> secondLayerResult, int iteration = -1)
         {
-            List<double> firstLayerResult = firstLayer.Calculate(list);
+            var firstLayerResult = firstLayer.Calculate(list);
+            secondLayerResult = secondLayer.Calculate(firstLayerResult);
 
-            //for (int i = 0; i < list.Count; i++)
-            //{
-            //    firstLayerResult.Add(firstLayer.Calculate(list));
-            //}
+            List<double> thirdLayerResult = thirdLayer.Calculate(list, secondLayerResult);
 
-            //List<List<double>> cList = new List<List<double>>();
-            //List<List<double>> sigmaList = new List<List<double>>();
-            //List<List<double>> bList = new List<List<double>>();
-
-            //for (int i = 0; i < firstLayer.Neurons.Length; i++)
-            //{
-            //    cList.Add(firstLayer.Neurons[i].C);
-            //    sigmaList.Add(firstLayer.Neurons[i].Sigma);
-            //    bList.Add(firstLayer.Neurons[i].B);
-            //}
-
-            //secondLayerResult = secondLayer.Calculate(firstLayerResult, cList, sigmaList, bList);
-
-            secondLayerResult = firstLayerResult;
-
-            List<double> thirdLayerResult = thirdLayer.Calculate(list, firstLayerResult);
-
-            List<double> fourthLayerResult = fourthLayer.Calculate(firstLayerResult, thirdLayerResult);
+            List<double> fourthLayerResult = fourthLayer.Calculate(secondLayerResult, thirdLayerResult);
 
             double fifthLayerResult = fifthLayer.Calculate(fourthLayerResult);
+
+            if(mainForm.IsShowNeuronsLog() && iteration != -1)
+            {
+                mainForm.LogResults(secondLayerResult, thirdLayerResult, fourthLayerResult, fifthLayerResult, iteration);
+            }
 
             return fifthLayerResult;
         }
@@ -81,10 +69,23 @@ namespace TSK.NeuralNetwork
             learningTokenSource.Dispose();
         }
 
+        private static void CheckNetwork()
+        {
+            int error = 0;
+
+            for(var j = 0; j < checkSet.Count; j++)
+            {
+                if(Math.Abs(Output(checkSet[j].Value, out _) - checkSet[j].Key) > 0.5)
+                {
+                    error++;
+                }
+            }
+
+            mainForm.ShowCheckError(checkSet.Count, error);
+        }
+
         public static void Learning()
         {
-            int iteration = 0;
-
             learningTokenSource = new CancellationTokenSource();
             cancellationLearningToken = learningTokenSource.Token;
 
@@ -94,19 +95,33 @@ namespace TSK.NeuralNetwork
                     {
                         if (cancellationLearningToken.IsCancellationRequested)
                         {
-                            cancellationLearningToken.ThrowIfCancellationRequested();
+                            try
+                            {
+                                cancellationLearningToken.ThrowIfCancellationRequested();
+                            }
+                            catch
+                            {
+                                CheckNetwork();
+                                return;
+                            }
+                            finally
+                            {
+                                learningTokenSource.Dispose();
+                            }
                         }
 
-                        iteration++;
-                        mainForm.PaintResultsLearning(iteration);
+                        mainForm.PaintCurrentEpoch(Epoch);
                         double[,] A = new double[learningSets.Count, (N + 1) * M];
 
                         for (int k = 0; k < learningSets.Count; k++)
                         {
                             KeyValuePair<double, List<double>> pair = learningSets[k];
                             List<double> l = pair.Value;
-                            List<double> secondLayerResult;
-                            Output(l, out secondLayerResult);
+
+                            Output(l, out List<double> secondLayerResult);
+
+                            double wSum = secondLayerResult.Sum();
+                            var _w = secondLayerResult.Select(o => o / wSum).ToList();
 
                             int p = 0;
                             bool flag = true;
@@ -115,14 +130,14 @@ namespace TSK.NeuralNetwork
                             {
                                 if (flag)
                                 {
-                                    A[k, j] = secondLayerResult[p];
+                                    A[k, j] = _w[p];
                                     flag = false;
                                 }
                                 else
                                 {
                                     for (int d = 0; d < l.Count; d++)
                                     {
-                                        A[k, j] = secondLayerResult[p] * l[d];
+                                        A[k, j] = _w[p] * l[d];
                                         j++;
                                     }
 
@@ -133,7 +148,7 @@ namespace TSK.NeuralNetwork
                             }
                         }
 
-                        A = A.PseudoInverse();
+                        double[,] Aplus = A.PseudoInverse();
 
                         double[] outputReal = new double[learningSets.Count];
 
@@ -143,7 +158,7 @@ namespace TSK.NeuralNetwork
                         }
 
                         List<List<double>> newP = new List<List<double>>();
-                        double[] result = Matrix.Dot(A, outputReal);
+                        double[] result = Matrix.Dot(Aplus, outputReal);
                         int index = 0;
                         for (int k = 0; k < M; k++)
                         {
@@ -157,19 +172,43 @@ namespace TSK.NeuralNetwork
                         }
 
                         thirdLayer.SetNewP(newP);
+                        if (mainForm.IsShowNeuronsLog())
+                        {
+                            mainForm.PrintLinearWeights(newP, Epoch);
+                        }
 
-                        List<double> AAAAAAAAAAAAAAA = new List<double>();
+                        double error = 0;
+
+                        var allP = new List<double>();
+                        foreach (var itemP in newP)
+                        {
+                            allP.AddRange(itemP);
+                        }
+
+                        double[] y = Matrix.Dot(A,allP.ToArray());
 
                         for (int k = 0; k < learningSets.Count; k++)
                         {
                             KeyValuePair<double, List<double>> pair = learningSets[k];
                             List<double> learningSetExample = pair.Value;
-                            double output = Output(learningSetExample, out AAAAAAAAAAAAAAA);
-                            double val = pair.Key;
 
-                            List<List<double>> newC = firstLayer.GetRecalculatedC(learningCoefficient, output, val, newP, learningSetExample);
-                            List<List<double>> newSigma = firstLayer.GetRecalculatedSigma(learningCoefficient, output, val, newP, learningSetExample);
-                            //List<List<double>> newB = firstLayer.GetRecalculatedD(learningCoefficient, output, val, newP, learningSetExample);
+                            double val = pair.Key;
+                            double output = y[k];
+
+                            if (mainForm.IsShowNeuronsLog())
+                            {
+                                mainForm.PrintOutputLog(Epoch, k, val, Output(learningSets[k].Value, out _, k));
+                            }
+
+                            //mainForm.PaintIterationError(iteration++, output - val);
+
+                            error += (Math.Abs(output - val) > 0.45) ? 1 : 0;
+
+                            Output(learningSetExample, out List<double> w);
+
+                            List<List<double>> newC = firstLayer.GetRecalculatedC(learningCoefficient, output, val, newP, learningSetExample, w);
+                            List<List<double>> newSigma = firstLayer.GetRecalculatedSigma(learningCoefficient, output, val, newP, learningSetExample, w);
+                            //List<List<double>> newB = firstLayer.GetRecalculatedB(learningCoefficient, output, val, newP, learningSetExample);
 
                             for (int i = 0; i < newC.Count; i++)
                             {
@@ -180,6 +219,15 @@ namespace TSK.NeuralNetwork
                                     //firstLayer.Neurons[i].B[j] -= newB[i][j];
                                 }
                             }
+                        }
+
+                        mainForm.PaintEpochError(Epoch, error);
+
+                        Epoch++;
+
+                        if(Epoch % 10 == 0)
+                        {
+                            CheckNetwork();
                         }
                     }
                 }, learningTokenSource.Token);
@@ -201,39 +249,25 @@ namespace TSK.NeuralNetwork
 
             for (int j = 0; j < learningSets.Count; j++)
             {
-                List<double> maxValues = new List<double>(Enumerable.Repeat(double.MinValue, learningSets[j][0].Value.Count));
-                List<double> minValues = new List<double>(Enumerable.Repeat(double.MaxValue, learningSets[j][0].Value.Count));
+                var averageParams = new List<double>(Enumerable.Repeat(0.0, learningSets[j][0].Value.Count));
 
-                /*learningSets[j].Select(x => x.Value).ToList().ForEach(x => x.Select((y, i) => new { val = y, index = i }).ToList().ForEach(z => averageParams[z.index] += z.val));
+                learningSets[j].Select(x => x.Value).ToList().ForEach(x => x.Select((y, i) => new { val = y, index = i }).ToList().ForEach(z => averageParams[z.index] += z.val));
 
-                averageParams = averageParams.Select(x => x /= learningSets[j].Count).ToList();*/
+                averageParams = averageParams.Select(x => x /= learningSets[j].Count).ToList();
 
-                learningSets[j].Select(x => x.Value).ToList().ForEach(x => x.Select((y, i) => new { val = y, index = i }).ToList().ForEach(z =>
-                {
-                    if (z.val > maxValues[z.index])
-                    {
-                        maxValues[z.index] = z.val;
-                    }
-                    if (z.val < minValues[z.index])
-                    {
-                        minValues[z.index] = z.val;
-                    }
-                }));
-
-                var result = new List<double>(Enumerable.Repeat(0.0, learningSets[j][0].Value.Count));
-                maxValues.Select((v, i) => result[i] = maxValues[i] - minValues[i]).ToList();
-
-                initCenters.Add(result);
+                initCenters.Add(averageParams);
             }
 
             List<double> totalAverageParams = new List<double>(Enumerable.Repeat(0.0, learningSets[0][0].Value.Count));
             initCenters.ForEach(x => x.Select((v, i) => totalAverageParams[i] += v).ToList());
             totalAverageParams = totalAverageParams.Select(x => x /= 2).ToList();
 
-            List<List<double>> newInitCenters = new List<List<double>>();
-            newInitCenters.Add(initCenters[0]);
-            newInitCenters.Add(totalAverageParams);
-            newInitCenters.Add(initCenters[1]);
+            List<List<double>> newInitCenters = new List<List<double>>
+            {
+                initCenters[0],
+                totalAverageParams,
+                initCenters[1]
+            };
 
             return newInitCenters;
         }
@@ -241,19 +275,6 @@ namespace TSK.NeuralNetwork
         public static List<List<double>> GetInitRadiuses(List<List<KeyValuePair<double, List<double>>>> learningSets, List<List<double>> centers)
         {
             List<List<double>> initRadiuses = new List<List<double>>();
-
-            /*for (int j = 0; j < learningSets.Count; j++)
-            {
-                List<double> averageParams = new List<double>(Enumerable.Repeat(0.0, learningSets[j][0].Value.Count));
-
-                learningSets[j].Select(x => x.Value).ToList().ForEach(x => x.Select((y, i) => new { val = y, index = i }).ToList().ForEach(z =>
-                {
-                    var newVal = Math.Abs(z.val - centers[j][z.index]);
-                    averageParams[z.index] = newVal > averageParams[z.index] ? newVal : averageParams[z.index];
-                }));
-
-                initRadiuses.Add(averageParams);
-            }*/
 
             List<double> averageParams = new List<double>(Enumerable.Repeat(0.0, learningSets[0][0].Value.Count));
             for (var i = 0; i < centers[0].Count; i++)

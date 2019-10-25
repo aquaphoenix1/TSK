@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TSK.NeuralNetwork.SecondLayer
 {
@@ -20,24 +22,9 @@ namespace TSK.NeuralNetwork.SecondLayer
             }
         }
 
-      
-        //public List<double> Calculate(List<List<double>> list, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList)
-        //{
-        //    List<double> result = new List<double>();
-
-        //    for (int i = 0; i < M; i++)
-        //    {
-        //        //List<double> l = new List<double>();
-
-        //        //for (int j = 0; j < list.Count; j++)
-        //        //{
-        //        //    l.Add(list[j][i]);
-        //        //}
-
-        //        result.Add(neurons[i].Calculate(l, cList[i], sigmaList[i], bList[i]));
-        //    }
-
-        //    return result;
-        //}
+        internal List<double> Calculate(List<List<double>> firstLayerResult)
+        {
+            return firstLayerResult.Select(o => o.Aggregate((t, p) => t *= p)).ToList();
+        }
     }
 }

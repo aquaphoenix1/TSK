@@ -24,16 +24,17 @@ namespace TSK.NeuralNetwork.FirstLayer
 
         internal FirstLayerNeuron[] Neurons { get; set; }
 
-        public List<double> Calculate(List<double> x)
+        public List<List<double>> Calculate(List<double> x)
         {
-            List<double> result = new List<double>();
+            List<List<double>> mu = new List<List<double>>();
 
             for (int i = 0; i < Neurons.Length; i++)
             {
-                result.Add(Neurons[i].Calculate(x));
+                mu.Add(Neurons[i].Calculate(x));
             }
 
-            return result;
+            return mu;
+            
         }
 
         private List<List<List<double>>> GetAllLists()
@@ -58,7 +59,7 @@ namespace TSK.NeuralNetwork.FirstLayer
             return list;
         }
 
-        public List<List<double>> GetRecalculatedC(double coefficient, double y, double d, List<List<double>> p, List<double> x)
+        public List<List<double>> GetRecalculatedC(double coefficient, double y, double d, List<List<double>> p, List<double> x, List<double> w)
         {
             List<List<List<double>>> allParams = GetAllLists();
             List<List<double>> newC = new List<List<double>>();
@@ -67,7 +68,7 @@ namespace TSK.NeuralNetwork.FirstLayer
                 List<double> c = new List<double>();
                 for (int j = 0; j < Neurons[i].C.Count; j++)
                 {
-                    c.Add(RecalculatedC(coefficient, i, j, y, d, p, x, allParams[0], allParams[1], allParams[2]));
+                    c.Add(RecalculatedC(coefficient, i, j, y, d, p, x, allParams[0], allParams[1], allParams[2], w));
                 }
 
                 newC.Add(c);
@@ -76,33 +77,46 @@ namespace TSK.NeuralNetwork.FirstLayer
             return newC;
         }
 
-        private double RecalculatedC(double coefficient, int i, int j, double y, double d, List<List<double>> p, List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList)
+        private double RecalculatedC(double coefficient, int i, int j, double y, double d, List<List<double>> p, List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList, List<double> w)
         {
-            return coefficient * DerivativeEC(i, j, y, d, p, x, cList, sigmaList, bList);
+            double f = DerivativeEC(i, j, y, d, p, x, cList, sigmaList, bList, w);
+            return coefficient * f;
         }
 
-        private double DerivativeEC(int i, int j, double y, double d, List<List<double>> p, List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList)
+        private double DerivativeEC(int i, int j, double y, double d, List<List<double>> p, List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList, List<double> w)
         {
             double result = y - d;
+            if (result == 0) result = 4.440892098500626E-16;
 
+            result = GetSumC(i, j, p, x, cList, sigmaList, bList, w, result);
+
+            return result;
+        }
+
+        private double GetSumC(int i, int j, List<List<double>> p, List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList, List<double> w, double error)
+        {
+            double result = 0.0;
+           
             for (int k = 0; k < M; k++)
             {
-                result += p[k][0];
+                double sum = p[k][0];
 
-                for (int j1 = 1; j1 < N; j1++)
+                for (int j1 = 0; j1 < N; j1++)
                 {
-                    result += p[k][j1] * x[j1 - 1];
+                    sum += p[k][j1 + 1] * x[j1];
                 }
 
-                result *= DerivativeC(x, cList, sigmaList, bList, k, i, j);
+                sum *= error * DerivativeC(x, cList, sigmaList, bList, k, i, j, w);
+
+                result += sum;
             }
 
             return result;
         }
 
-        private double DerivativeC(List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList, int k, int i, int j)
+        private double DerivativeC(List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList, int k, int i, int j, List<double> w)
         {
-            double result = Tools.DerivativeCoefficient(x, cList, sigmaList, bList, k, i, j);
+            double result = Tools.DerivativeCoefficient(x, cList, sigmaList, bList, k, i, j, w);
 
             result *= 2 * Neurons[i].B[j] / Neurons[i].Sigma[j] * Tools.GaussPowMinusOne(x[j], Neurons[i].C[j], Neurons[i].Sigma[j], Neurons[i].B[j]);
 
@@ -111,7 +125,7 @@ namespace TSK.NeuralNetwork.FirstLayer
             return result;
         }
 
-        public List<List<double>> GetRecalculatedSigma(double coefficient, double y, double d, List<List<double>> p, List<double> x)
+        public List<List<double>> GetRecalculatedSigma(double coefficient, double y, double d, List<List<double>> p, List<double> x, List<double> w)
         {
             List<List<List<double>>> allParams = GetAllLists();
             List<List<double>> newSigma = new List<List<double>>();
@@ -120,7 +134,7 @@ namespace TSK.NeuralNetwork.FirstLayer
                 List<double> sigma = new List<double>();
                 for (int j = 0; j < Neurons[i].C.Count; j++)
                 {
-                    sigma.Add(RecalculatedSigma(coefficient, i, j, y, d, p, x, allParams[0], allParams[1], allParams[2]));
+                    sigma.Add(RecalculatedSigma(coefficient, i, j, y, d, p, x, allParams[0], allParams[1], allParams[2], w));
                 }
 
                 newSigma.Add(sigma);
@@ -129,33 +143,44 @@ namespace TSK.NeuralNetwork.FirstLayer
             return newSigma;
         }
 
-        private double RecalculatedSigma(double coefficient, int i, int j, double y, double d, List<List<double>> p, List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList)
+        private double RecalculatedSigma(double coefficient, int i, int j, double y, double d, List<List<double>> p, List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList, List<double> w)
         {
-            return coefficient * DerivativeESigma(i, j, y, d, p, x, cList, sigmaList, bList);
+            return coefficient * DerivativeESigma(i, j, y, d, p, x, cList, sigmaList, bList, w);
         }
 
-        private double DerivativeESigma(int i, int j, double y, double d, List<List<double>> p, List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList)
+        private double DerivativeESigma(int i, int j, double y, double d, List<List<double>> p, List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList, List<double> w)
         {
             double result = y - d;
 
+            result *= GetSumSigma(i, j, p, x, cList, sigmaList, bList, w);
+
+            return result;
+        }
+
+        private double GetSumSigma(int i, int j, List<List<double>> p, List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList, List<double> w)
+        {
+            double result = 0.0;
+
             for (int k = 0; k < M; k++)
             {
-                result += p[k][0];
+                double sum = p[k][0];
 
-                for (int j1 = 1; j1 < N; j1++)
+                for (int j1 = 0; j1 < N; j1++)
                 {
-                    result += p[k][j1] * x[j1 - 1];
+                    sum += p[k][j1 + 1] * x[j1];
                 }
 
-                result *= DerivativeSigma(x, cList, sigmaList, bList, k, i, j);
+                sum *= DerivativeSigma(x, cList, sigmaList, bList, k, i, j, w);
+
+                result += sum;
             }
 
             return result;
         }
 
-        private double DerivativeSigma(List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList, int k, int i, int j)
+        private double DerivativeSigma(List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList, int k, int i, int j, List<double> w)
         {
-            double result = Tools.DerivativeCoefficient(x, cList, sigmaList, bList, k, i, j);
+            double result = Tools.DerivativeCoefficient(x, cList, sigmaList, bList, k, i, j, w);
 
             var gauss = Tools.GaussPow(x[j], Neurons[i].C[j], Neurons[i].Sigma[j], Neurons[i].B[j]);
 
@@ -182,7 +207,7 @@ namespace TSK.NeuralNetwork.FirstLayer
             }
         }
 
-        public List<List<double>> GetRecalculatedB(double coefficient, double y, double d, List<List<double>> p, List<double> x)
+        public List<List<double>> GetRecalculatedB(double coefficient, double y, double d, List<List<double>> p, List<double> x, List<double> w)
         {
             List<List<List<double>>> allParams = GetAllLists();
             List<List<double>> newB = new List<List<double>>();
@@ -191,7 +216,7 @@ namespace TSK.NeuralNetwork.FirstLayer
                 List<double> b = new List<double>();
                 for (int j = 0; j < Neurons[i].C.Count; j++)
                 {
-                    b.Add(RecalculatedB(coefficient, i, j, y, d, p, x, allParams[0], allParams[1], allParams[2]));
+                    b.Add(RecalculatedB(coefficient, i, j, y, d, p, x, allParams[0], allParams[1], allParams[2], w));
                 }
 
                 newB.Add(b);
@@ -200,33 +225,35 @@ namespace TSK.NeuralNetwork.FirstLayer
             return newB;
         }
 
-        private double RecalculatedB(double coefficient, int i, int j, double y, double d, List<List<double>> p, List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList)
+        private double RecalculatedB(double coefficient, int i, int j, double y, double d, List<List<double>> p, List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList, List<double> w)
         {
-            return coefficient * DerivativeEB(i, j, y, d, p, x, cList, sigmaList, bList);
+            return coefficient * DerivativeEB(i, j, y, d, p, x, cList, sigmaList, bList, w);
         }
 
-        private double DerivativeEB(int i, int j, double y, double d, List<List<double>> p, List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList)
+        private double DerivativeEB(int i, int j, double y, double d, List<List<double>> p, List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList, List<double> w)
         {
             double result = y - d;
 
             for (int k = 0; k < M; k++)
             {
-                result += p[k][0];
+                double sum = p[k][0];
 
                 for (int j1 = 1; j1 < N; j1++)
                 {
-                    result += p[k][j1] * x[j1 - 1];
+                    sum += p[k][j1] * x[j1 - 1];
                 }
 
-                result *= DerivativeB(x, cList, sigmaList, bList, k, i, j);
+                result *= sum;
+
+                result *= DerivativeB(x, cList, sigmaList, bList, k, i, j, w);
             }
 
             return result;
         }
 
-        private double DerivativeB(List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList, int k, int i, int j)
+        private double DerivativeB(List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList, int k, int i, int j, List<double> w)
         {
-            double result = Tools.DerivativeCoefficient(x, cList, sigmaList, bList, k, i, j);
+            double result = Tools.DerivativeCoefficient(x, cList, sigmaList, bList, k, i, j, w);
 
             var gauss = Tools.GaussPow(x[j], Neurons[i].C[j], Neurons[i].Sigma[j], Neurons[i].B[j]);
 

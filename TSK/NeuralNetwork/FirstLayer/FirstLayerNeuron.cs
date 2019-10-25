@@ -30,17 +30,17 @@ namespace TSK.NeuralNetwork.FirstLayer
             }*/
         }
 
-        public double Calculate(List<double> x)
+        public List<double> Calculate(List<double> x)
         {
-            /*double result = 1.0;
+            var result = new List<double>();
 
-            for (int j = 0; j < x.Count; j++)
+            for (int i = 0; i < x.Count; i++)
             {
-                result *= Tools.nu(x, C, Sigma, B);
+                result
+                    .Add(1.0 / (1.0 + Math.Pow((x[i] - C[i])/ Sigma[i], 2 * B[i])));
             }
 
-            return result;*/
-            return Tools.nu(x, C, Sigma, B);
+            return result;
         }
 
         internal void InitCenters(List<double> list)

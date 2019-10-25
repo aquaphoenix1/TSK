@@ -48,6 +48,8 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -72,7 +74,6 @@
     <Compile Include="NeuralNetwork\FourthLayer\FourthLayer.cs" />
     <Compile Include="NeuralNetwork\FourthLayer\FourthLayerNeuron.cs" />
     <Compile Include="NeuralNetwork\Network.cs" />
-    <Compile Include="NeuralNetwork\Neuron.cs" />
     <Compile Include="NeuralNetwork\SecondLayer\SecondLayer.cs" />
     <Compile Include="NeuralNetwork\SecondLayer\SecondLayerNeuron.cs" />
     <Compile Include="NeuralNetwork\ThirdLayer\ThirdLayer.cs" />

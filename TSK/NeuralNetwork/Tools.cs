@@ -5,16 +5,34 @@ using System.Linq;
 
 namespace TSK.NeuralNetwork
 {
-    class Tools
+    static class Tools
     {
         public static Random random = new Random();
 
-        public static int GetRandom(int maxValue)
+        public static int GetRandom(int minValue, int maxValue)
         {
-            return random.Next(0, maxValue);
+            return random.Next(minValue, maxValue);
         }
 
-        public static Tuple<List<KeyValuePair<double, List<double>>>, List<double>> DownloadSet(string path)
+        public static int GetRandom(int maxValue)
+        {
+            return random.Next(maxValue);
+        }
+
+        public static void Shuffle<T>(this IList<T> list)
+        {
+            int n = list.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = GetRandom(n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+        }
+
+        public static List<KeyValuePair<double, List<double>>> DownloadSet(string path)
         {
             var result = new List<KeyValuePair<double, List<double>>>();
             using (TextReader reader = File.OpenText(path))
@@ -29,22 +47,7 @@ namespace TSK.NeuralNetwork
                 }
             }
 
-            var maxValues = NormalizeData(ref result);
-
-            return new Tuple<List<KeyValuePair<double, List<double>>>, List<double>>(result, maxValues);
-        }
-
-        public static List<double> NormalizeData(ref List<KeyValuePair<double, List<double>>> list)
-        {
-            var maxValues = new List<double>();
-            for (int i = 0; i < list[0].Value.Count; i++)
-            {
-                var max = list.Select(o => o.Value[i]).Max();
-                maxValues.Add(max);
-                list.ForEach(o => o.Value[i] /= max);
-            }
-
-            return maxValues;
+            return new List<KeyValuePair<double, List<double>>>(result);
         }
 
         public static List<KeyValuePair<double, List<double>>> GetRandomArray(List<KeyValuePair<double, List<double>>> list, int learningPercents)
@@ -101,7 +104,7 @@ namespace TSK.NeuralNetwork
             {
                 if (s != i)
                 {
-                    result *= GaussPow(x[s], c[s], sigma[s], b[s]);
+                    result *= 1.0 / (1.0 + GaussPow(x[s], c[s], sigma[s], b[s]));
                 }
             }
 
@@ -131,17 +134,39 @@ namespace TSK.NeuralNetwork
             return multiply;
         }
 
-        public static double DerivativeCoefficient(List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList, int k, int i, int j)
+        public static double DerivativeCoefficient(List<double> x, List<List<double>> cList, List<List<double>> sigmaList, List<List<double>> bList, int k, int i, int j, List<double> w)
         {
-            var m = Tools.m(x, cList, sigmaList, bList);
-            var coeff = (DeltaKroneker(i, k) * m - l(x, cList[i], sigmaList[i], bList[i])) / Math.Pow(m, 2);
 
-            for (int s = 0; s < x.Count; s++)
+            var m = w.Sum();
+            var l = w[i];
+
+            var coef = ((k == i ? 1 : 0) * m - l) /  Math.Pow(m, 2);
+
+            coef *= Mu(x.ToArray(), cList[i].ToArray(), sigmaList[i].ToArray(), bList[i].ToArray(), j);
+
+
+            ////var m = Tools.m(x, cList, sigmaList, bList);
+            //var coeff = (DeltaKroneker(i, k) * m - l(x, cList[i], sigmaList[i], bList[i])) / Math.Pow(m, 2);
+
+            ////for (int s = 0; s < x.Count; s++)
+            //{
+            //    coeff *= l(x, cList[i], sigmaList[i], bList[i], j);
+            //}
+
+            return coef;
+        }
+
+
+        private static double Mu(double[] x, double[] c, double[] s, double[] b, int sInd)
+        {
+            double result = 1;
+
+            for (int i = 0; i < x.Length; i++)
             {
-                coeff *= l(x, cList[i], sigmaList[i], bList[i], s);
+                if (i == sInd) continue;
+                result *= 1.0 / (1.0 + Math.Pow((x[i] - c[i]) / s[i], 2 * b[i]));
             }
-
-            return coeff;
+            return result;
         }
     }
 }
