@@ -28,12 +28,14 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.chartLearning = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.tabControlMain = new System.Windows.Forms.TabControl();
             this.tabPageMain = new System.Windows.Forms.TabPage();
+            this.labelError = new System.Windows.Forms.Label();
+            this.textBoxError = new System.Windows.Forms.TextBox();
             this.tableLayoutPanelNeuronsLogs = new System.Windows.Forms.TableLayoutPanel();
             this.richTextBoxLinearWeights = new System.Windows.Forms.RichTextBox();
             this.richTextBoxSecondLayerThirdNeuron = new System.Windows.Forms.RichTextBox();
@@ -74,8 +76,8 @@
             this.labelCoefficient = new System.Windows.Forms.Label();
             this.numericUpDownCoefficient = new System.Windows.Forms.NumericUpDown();
             this.tabPageLearning = new System.Windows.Forms.TabPage();
-            this.textBoxError = new System.Windows.Forms.TextBox();
-            this.labelError = new System.Windows.Forms.Label();
+            this.labelLearningPercent = new System.Windows.Forms.Label();
+            this.numericUpDownLearningPercent = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.chartLearning)).BeginInit();
             this.tabControlMain.SuspendLayout();
             this.tabPageMain.SuspendLayout();
@@ -92,22 +94,23 @@
             this.groupBoxNetworkParameters.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownCoefficient)).BeginInit();
             this.tabPageLearning.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownLearningPercent)).BeginInit();
             this.SuspendLayout();
             // 
             // chartLearning
             // 
-            chartArea1.Name = "ChartArea1";
-            this.chartLearning.ChartAreas.Add(chartArea1);
+            chartArea2.Name = "ChartArea1";
+            this.chartLearning.ChartAreas.Add(chartArea2);
             this.chartLearning.Dock = System.Windows.Forms.DockStyle.Fill;
-            legend1.Name = "Legend1";
-            this.chartLearning.Legends.Add(legend1);
+            legend2.Name = "Legend1";
+            this.chartLearning.Legends.Add(legend2);
             this.chartLearning.Location = new System.Drawing.Point(3, 3);
             this.chartLearning.Name = "chartLearning";
-            series1.ChartArea = "ChartArea1";
-            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series1.Legend = "Legend1";
-            series1.Name = "Ошибка эпохи";
-            this.chartLearning.Series.Add(series1);
+            series2.ChartArea = "ChartArea1";
+            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series2.Legend = "Legend1";
+            series2.Name = "Ошибка эпохи";
+            this.chartLearning.Series.Add(series2);
             this.chartLearning.Size = new System.Drawing.Size(1028, 725);
             this.chartLearning.TabIndex = 4;
             this.chartLearning.Text = "Обучение";
@@ -138,6 +141,25 @@
             this.tabPageMain.TabIndex = 0;
             this.tabPageMain.Text = "Главная панель";
             this.tabPageMain.UseVisualStyleBackColor = true;
+            // 
+            // labelError
+            // 
+            this.labelError.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelError.AutoSize = true;
+            this.labelError.Location = new System.Drawing.Point(877, 242);
+            this.labelError.Name = "labelError";
+            this.labelError.Size = new System.Drawing.Size(96, 13);
+            this.labelError.TabIndex = 13;
+            this.labelError.Text = "Ошибка обучения";
+            // 
+            // textBoxError
+            // 
+            this.textBoxError.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxError.Location = new System.Drawing.Point(826, 261);
+            this.textBoxError.Name = "textBoxError";
+            this.textBoxError.ReadOnly = true;
+            this.textBoxError.Size = new System.Drawing.Size(200, 20);
+            this.textBoxError.TabIndex = 14;
             // 
             // tableLayoutPanelNeuronsLogs
             // 
@@ -567,6 +589,8 @@
             // 
             // groupBoxNetworkParameters
             // 
+            this.groupBoxNetworkParameters.Controls.Add(this.labelLearningPercent);
+            this.groupBoxNetworkParameters.Controls.Add(this.numericUpDownLearningPercent);
             this.groupBoxNetworkParameters.Controls.Add(this.checkBoxShowNeuronsLog);
             this.groupBoxNetworkParameters.Controls.Add(this.buttonInitialize);
             this.groupBoxNetworkParameters.Controls.Add(this.labelCoefficient);
@@ -581,7 +605,7 @@
             // checkBoxShowNeuronsLog
             // 
             this.checkBoxShowNeuronsLog.AutoSize = true;
-            this.checkBoxShowNeuronsLog.Location = new System.Drawing.Point(41, 59);
+            this.checkBoxShowNeuronsLog.Location = new System.Drawing.Point(39, 66);
             this.checkBoxShowNeuronsLog.Name = "checkBoxShowNeuronsLog";
             this.checkBoxShowNeuronsLog.Size = new System.Drawing.Size(131, 17);
             this.checkBoxShowNeuronsLog.TabIndex = 14;
@@ -601,7 +625,7 @@
             // labelCoefficient
             // 
             this.labelCoefficient.AutoSize = true;
-            this.labelCoefficient.Location = new System.Drawing.Point(6, 31);
+            this.labelCoefficient.Location = new System.Drawing.Point(6, 21);
             this.labelCoefficient.Name = "labelCoefficient";
             this.labelCoefficient.Size = new System.Drawing.Size(126, 13);
             this.labelCoefficient.TabIndex = 2;
@@ -615,7 +639,7 @@
             0,
             0,
             196608});
-            this.numericUpDownCoefficient.Location = new System.Drawing.Point(138, 29);
+            this.numericUpDownCoefficient.Location = new System.Drawing.Point(138, 19);
             this.numericUpDownCoefficient.Maximum = new decimal(new int[] {
             999,
             0,
@@ -646,24 +670,31 @@
             this.tabPageLearning.Text = "Обучение";
             this.tabPageLearning.UseVisualStyleBackColor = true;
             // 
-            // textBoxError
+            // labelLearningPercent
             // 
-            this.textBoxError.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxError.Location = new System.Drawing.Point(826, 261);
-            this.textBoxError.Name = "textBoxError";
-            this.textBoxError.ReadOnly = true;
-            this.textBoxError.Size = new System.Drawing.Size(200, 20);
-            this.textBoxError.TabIndex = 14;
+            this.labelLearningPercent.AutoSize = true;
+            this.labelLearningPercent.Location = new System.Drawing.Point(6, 46);
+            this.labelLearningPercent.Name = "labelLearningPercent";
+            this.labelLearningPercent.Size = new System.Drawing.Size(100, 13);
+            this.labelLearningPercent.TabIndex = 16;
+            this.labelLearningPercent.Text = "Процент  выборки";
             // 
-            // labelError
+            // numericUpDownLearningPercent
             // 
-            this.labelError.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelError.AutoSize = true;
-            this.labelError.Location = new System.Drawing.Point(877, 242);
-            this.labelError.Name = "labelError";
-            this.labelError.Size = new System.Drawing.Size(96, 13);
-            this.labelError.TabIndex = 13;
-            this.labelError.Text = "Ошибка обучения";
+            this.numericUpDownLearningPercent.Location = new System.Drawing.Point(138, 44);
+            this.numericUpDownLearningPercent.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.numericUpDownLearningPercent.Name = "numericUpDownLearningPercent";
+            this.numericUpDownLearningPercent.Size = new System.Drawing.Size(56, 20);
+            this.numericUpDownLearningPercent.TabIndex = 15;
+            this.numericUpDownLearningPercent.Value = new decimal(new int[] {
+            70,
+            0,
+            0,
+            0});
             // 
             // FormMain
             // 
@@ -693,6 +724,7 @@
             this.groupBoxNetworkParameters.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownCoefficient)).EndInit();
             this.tabPageLearning.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownLearningPercent)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -743,6 +775,8 @@
         private System.Windows.Forms.RichTextBox richTextBoxOutputNeuronsLog;
         private System.Windows.Forms.TextBox textBoxError;
         private System.Windows.Forms.Label labelError;
+        private System.Windows.Forms.Label labelLearningPercent;
+        private System.Windows.Forms.NumericUpDown numericUpDownLearningPercent;
     }
 }
 

@@ -43,7 +43,7 @@ namespace TSK
                 List<List<double>> initRadiuses = Network.GetInitRadiuses(res, initCenters);
 
                 var minCount = res.Min(x => x.Count());
-                int learningPercents = (int)(minCount * 70 / 100);
+                int learningPercents = (int)(minCount * (double)numericUpDownLearningPercent.Value / 100.0);
                 int checkPercents = minCount - learningPercents;
 
                 List<KeyValuePair<double, List<double>>> learningSet1 = Tools.GetRandomArray(res[0], learningPercents);
@@ -178,6 +178,24 @@ namespace TSK
             buttonStartLearning.Enabled = false;
             buttonStopLearning.Enabled = true;
             buttonTest.Enabled = false;
+
+            richTextBoxFirstLayerFirstNeuron.Clear();
+            richTextBoxFirstLayerSecondNeuron.Clear();
+            richTextBoxFirstLayerThirdNeuron.Clear();
+
+            richTextBoxSecondLayerFirstNeuron.Clear();
+            richTextBoxSecondLayerSecondNeuron.Clear();
+            richTextBoxSecondLayerThirdNeuron.Clear();
+
+            richTextBoxThirdLayerFirstNeuron.Clear();
+            richTextBoxThirdLayerSecondNeuron.Clear();
+
+            richTextBoxFourthLayerFirstNeuron.Clear();
+
+            richTextBoxLinearWeights.Clear();
+            richTextBoxOutputNeuronsLog.Clear();
+
+            chartLearning.Series["Ошибка эпохи"].Points.Clear();
 
             Network.Learning();
         }
