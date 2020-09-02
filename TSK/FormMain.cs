@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using TSK.NeuralNetwork;
 
@@ -74,7 +70,7 @@ namespace TSK
                 ClearLogs();
             }
         }
-        
+
         private void ClearLogs()
         {
             Action<Control.ControlCollection> func = null;
@@ -126,7 +122,8 @@ namespace TSK
 
         internal void PrintLinearWeights(List<List<double>> listWeights, int epoch)
         {
-            richTextBoxLinearWeights.Invoke((MethodInvoker)delegate {
+            richTextBoxLinearWeights.Invoke((MethodInvoker)delegate
+            {
                 string weights = "Эпоха " + epoch.ToString() + ":\r\n";
                 for (var i = 0; i < listWeights.Count; i++)
                 {
